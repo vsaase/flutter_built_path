@@ -8,7 +8,7 @@ import 'package:built_path_annotations/built_path_annotations.dart';
 import 'package:path_parsing/path_parsing.dart';
 import 'package:source_gen/source_gen.dart';
 
-Builder svgPathSharedPartBuilder({String formatOutput(String code)}) {
+Builder svgPathSharedPartBuilder({String Function(String code)? formatOutput}) {
   return new PartBuilder(
       <Generator>[new SvgPathGenerator()], '.svg_path.g.dart',
       formatOutput: formatOutput,
@@ -29,23 +29,23 @@ class SvgPathGenerator extends Generator {
   }
 
   void checkField(Element field, StringBuffer buffer, String friendlyName) {
-    DartObject annotation = _checker.firstAnnotationOf(field);
-    if (annotation == null && field is FieldElement) {
-      annotation = _checker.firstAnnotationOf(field.getter);
+    DartObject? annotation = _checker.firstAnnotationOf(field);
+    if (annotation == null && field is FieldElement && field.getter != null) {
+      annotation = _checker.firstAnnotationOf(field.getter!);
     }
     if (annotation != null) {
-      buffer.writeln('Path __\$$friendlyName;');
+      buffer.writeln('Path? __\$$friendlyName;');
       buffer.writeln(
           'Path get _\$$friendlyName => __\$$friendlyName ?? (__\$$friendlyName =');
       final FlutterPathGenProxy proxy = new FlutterPathGenProxy();
 
       writeSvgPathDataToPath(
-        annotation.getField('data').toStringValue(),
+        annotation.getField('data')?.toStringValue(),
         proxy,
       );
       buffer.write(proxy);
 
-      final int fillRuleIndex =
+      final int? fillRuleIndex =
           annotation.getField('fillRule')?.getField('index')?.toIntValue();
       if (fillRuleIndex != null) {
         buffer.write(_getFillRule(fillRuleIndex));
@@ -60,10 +60,11 @@ class SvgPathGenerator extends Generator {
     for (Element el in library.allElements) {
       if (el is ClassElement) {
         for (FieldElement field in el.fields) {
+          print('${el.name}_${field.name}');
           checkField(field, buffer, '${el.name}_${field.name}');
         }
       } else {
-        checkField(el, buffer, el.name);
+        checkField(el, buffer, el.name!);
       }
     }
     return buffer.toString();

@@ -3,10 +3,10 @@ import 'package:path_parsing/path_parsing.dart';
 class FlutterPathGenProxy extends PathProxy {
   FlutterPathGenProxy() {
     code = new StringBuffer();
-    code.write('new Path()');
+    code.write('Path()');
   }
 
-  StringBuffer code;
+  late StringBuffer code;
 
   @override
   void close() {

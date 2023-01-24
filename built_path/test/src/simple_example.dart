@@ -14,7 +14,7 @@ class Path {
       double x, double y, double x2, double y2, double x3, double y3) {}
   void close() {}
 
-  PathFillType fillType;
+  PathFillType? fillType;
 }
 
 @SvgPath('M 10 10 L 20 20 z')
